@@ -1,374 +1,371 @@
-# ML/DL Training Platform
+# ML/DL Trainer
 
-A scalable, production-ready web-based Machine Learning and Deep Learning training platform.
+**A production-ready web platform for training, evaluating, and deploying machine learning and deep learning models.**
 
-## Features
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status: Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](#)
 
-- **Data Upload & Exploration**: Upload CSV datasets with automatic data quality checks
-- **Flexible Model Selection**: Choose from ML (Scikit-learn) or DL (TensorFlow/Keras) models
-- **Hyperparameter Configuration**: Tune learning rate, epochs, batch size, and more
-- **Automatic Preprocessing**: Missing value imputation, scaling, categorical encoding
-- **Model Training**: Single and cross-validation training modes
-- **Comprehensive Evaluation**: Classification and regression metrics
-- **Visualization**: Confusion matrices, feature importance, residual plots
-- **Model Persistence**: Save and load trained models
-- **Session Management**: Track multiple training sessions
+## Overview
 
-## Architecture
+ML/DL Trainer is an end-to-end machine learning platform that simplifies the model development lifecycle. Upload data, configure hyperparameters, train models, and download results—all through an intuitive web interface. Supports 9 ML algorithms and 3 DL architectures with automatic preprocessing, cross-validation, and comprehensive evaluation metrics.
+
+## ✨ Key Features
+
+| Feature | Details |
+|---------|---------|
+| **📤 Data Upload** | CSV file upload with automatic validation and quality checks |
+| **🔍 EDA** | Exploratory data analysis with missing value detection, feature relationships, and target analysis |
+| **🎯 Model Selection** | 9 ML algorithms (Scikit-learn) + 3 DL architectures (TensorFlow/Keras) |
+| **⚙️ Hyperparameter Tuning** | Per-model configuration for learning rate, epochs, batch size, tree depth, etc. |
+| **🔄 Preprocessing** | Automatic missing value imputation, feature scaling, categorical encoding |
+| **📊 Evaluation** | Classification & regression metrics, confusion matrices, feature importance plots |
+| **💾 Model Persistence** | Download trained models (PKL) and metrics (JSON) |
+| **🚀 Production Ready** | Error handling, logging, memory monitoring, Docker support |
+
+## 🤖 Supported Models
+
+### Machine Learning (Scikit-learn)
+- **Classification**: Logistic Regression, Random Forest, SVM, KNN, Gradient Boosting
+- **Regression**: Linear Regression, Random Forest, SVR, Gradient Boosting
+
+### Deep Learning (TensorFlow/Keras)
+- Sequential Neural Networks
+- Convolutional Neural Networks (CNN)
+- Recurrent Neural Networks (LSTM)
+
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────┐
-│     Streamlit Frontend UI           │
-│  (Data Upload, Config, Training)    │
-└────────────┬────────────────────────┘
-             │
-┌────────────▼────────────────────────┐
-│   FastAPI Backend (Optional)        │
-│  (API Routes, Session Management)   │
+│     Streamlit Frontend (Port 8501)  │
+│  (Upload, Config, Training, Results)│
 └────────────┬────────────────────────┘
              │
      ┌───────┴──────────┬──────────────┬──────────┐
      │                  │              │          │
 ┌────▼───────┐   ┌────▼────┐   ┌────▼──┐   ┌──▼────┐
-│ Preprocessing│   │Model    │   │Eval.  │   │Storage │
-│ & Features   │   │Training │   │Metrics│   │Repos   │
-└──────────────┘   └─────────┘   └───────┘   └────────┘
+│Preprocessing│   │Model    │   │Eval.  │   │Storage │
+│ & Features  │   │Training │   │Metrics│   │(PKL)   │
+└─────────────┘   └─────────┘   └───────┘   └────────┘
 ```
 
-### Folder Structure
+## 📋 Project Structure
 
 ```
 ML_DL_Trainer/
-├── app/                          # Frontend application
-│   ├── main.py                   # Streamlit entry point
+├── app/                          # Frontend (Streamlit)
+│   ├── main.py                   # Entry point
 │   ├── config.py                 # Configuration
-│   └── utils/                    # Utilities
-│       ├── file_handler.py
-│       ├── logger.py
-│       └── validators.py
-├── backend/                      # Backend services
-│   ├── session_manager.py        # Session management
-│   └── task_queue.py             # Async task handling
-├── core/                         # Core ML operations
+│   ├── pages/
+│   │   └── eda_page.py          # EDA visualization
+│   └── utils/
+│       ├── error_handler.py      # Error handling & logging
+│       ├── file_handler.py       # File operations
+│       ├── logger.py             # Logging setup
+│       └── validators.py         # Data validation
+├── core/                         # ML operations
 │   ├── preprocessor.py           # Data preprocessing
 │   ├── feature_engineer.py       # Feature engineering
+│   ├── target_analyzer.py        # Target analysis
 │   └── validator.py              # Data validation
-├── models/                       # ML/DL models
-│   ├── model_factory.py          # Model creation
-│   ├── ml/                       # SKL models
-│   │   ├── classifier.py
-│   │   └── regressor.py
-│   └── dl/                       # TensorFlow models
-│       ├── cnn_models.py
-│       └── rnn_models.py
+├── models/                       # Model implementations
+│   ├── model_factory.py          # Factory pattern
+│   ├── ml/
+│   │   ├── classifier.py         # ML classifiers
+│   │   └── regressor.py          # ML regressors
+│   └── dl/
+│       ├── cnn_models.py         # CNN architectures
+│       └── rnn_models.py         # RNN architectures
 ├── evaluation/                   # Evaluation utilities
 │   ├── metrics.py                # Metrics calculation
-│   ├── visualizer.py             # Plotting utilities
-│   ├── reporter.py               # Report generation
-│   └── cross_validator.py        # CV utilities
+│   ├── visualizer.py             # Plotting
+│   ├── cross_validator.py        # Cross-validation
+│   └── reporter.py               # Report generation
 ├── storage/                      # Data persistence
 │   ├── model_repository.py       # Model storage
 │   ├── result_repository.py      # Results storage
 │   └── cache_manager.py          # Caching
 ├── data/                         # Data directories
-│   ├── uploads/                  # User uploaded files
+│   ├── uploads/                  # User uploads
 │   ├── preprocessed/             # Processed data
 │   ├── models/                   # Trained models
 │   └── results/                  # Experiment results
 ├── tests/                        # Unit tests
-├── requirements.txt              # Dependencies
+├── Dockerfile                    # Container image
+├── docker-compose.yml            # Multi-container setup
+├── requirements.txt              # Python dependencies
 └── README.md                     # This file
 ```
 
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9 or higher
-- pip or conda
+- Python 3.11+
+- Docker (optional)
+- 2GB RAM minimum
 
-### Setup
+### Local Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/ML_DL_Trainer.git
-cd ML_DL_Trainer
-```
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/yourusername/ML_DL_Trainer.git
+   cd ML_DL_Trainer
+   ```
 
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4. Set environment variables:
-```bash
-# Create .env file
-echo "DEBUG=False" > .env
-echo "LOG_LEVEL=INFO" >> .env
-```
+4. **Run application**
+   ```bash
+   streamlit run app/main.py
+   ```
 
-## Usage
+   Application opens at `http://localhost:8501`
 
-### Run Streamlit Application
+### Docker Deployment
 
-```bash
-streamlit run app/main.py
-```
+1. **Build image**
+   ```bash
+   docker build -t ml-dl-trainer:latest .
+   ```
 
-The application will open at `http://localhost:8501`
+2. **Run container**
+   ```bash
+   docker run -p 8501:8501 \
+     -v $(pwd)/data:/app/data \
+     ml-dl-trainer:latest
+   ```
 
-### Workflow
+3. **Using Docker Compose**
+   ```bash
+   docker-compose up -d
+   ```
 
-1. **Home Page**: Overview and getting started guide
-2. **Data Upload**: Upload CSV file and explore data
-3. **Training**: Select model, configure hyperparameters, and train
-4. **Results**: View metrics, visualizations, and download model
-5. **About**: Platform information
+## 📖 Usage Workflow
 
-## Supported Models
+### Step 1: Upload Data
+- Navigate to **Data Upload** page
+- Upload CSV file or load sample dataset (Iris, Wine)
+- Review data preview, statistics, and column info
 
-### Machine Learning (Scikit-learn)
+### Step 2: Explore Data (Optional)
+- Go to **EDA / Data Understanding** page
+- Analyze missing values, feature distributions, relationships
+- Identify target variable characteristics
 
-**Classification:**
-- **Logistic Regression** - Fast, interpretable, baseline model
-- **Random Forest** - Robust ensemble, handles non-linear relationships
-- **Support Vector Machine (SVM)** - Excellent for high-dimensional data
-- **Gradient Boosting** - Sequential ensemble learning with proven accuracy
-- **XGBoost** *(Optional)* - Optimized gradient boosting, industry standard
-- **LightGBM** *(Optional)* - Fast boosting with lower memory footprint
+### Step 3: Configure & Train
+- Select **Training** page
+- Choose task type: Classification or Regression
+- Select algorithm and set hyperparameters
+- Click **Start Training**
 
-**Regression:**
-- **Linear Regression** - Simple baseline
-- **Random Forest** - Robust ensemble approach
-- **Support Vector Regression (SVR)** - For non-linear problems
-- **Gradient Boosting** - Sequential boosting for complex patterns
-- **XGBoost** *(Optional)* - High-performance boosting
-- **LightGBM** *(Optional)* - Memory-efficient boosting
+### Step 4: Review Results
+- View performance metrics on **Results** page
+- Download trained model (PKL format)
+- Export metrics (JSON format)
 
-### Deep Learning (TensorFlow/Keras)
-
-- Sequential Neural Networks
-- Convolutional Neural Networks (CNN)
-- Recurrent Neural Networks (RNN/LSTM)
-
-### Optional Libraries
-
-| Library | Status | Installation |
-|---------|--------|---------------|
-| XGBoost | Optional | `pip install xgboost` |
-| LightGBM | Optional | `pip install lightgbm` |
-| SMOTE | Optional | `pip install imbalanced-learn` |
-
-✅ **Core functionality works without optional libraries** - graceful fallback if not installed
-
-## Model Selection Guide
-
-### When to Use Each Model
-
-| Model | Best For | Pros | Cons |
-|-------|----------|------|------|
-| **Logistic Regression** | Baseline, interpretability | Fast, explainable | Limited for complex patterns |
-| **Random Forest** | General-purpose | Robust, feature importance | Can overfit with defaults |
-| **SVM** | High-dimensional data | Powerful, versatile | Slow on large datasets |
-| **Gradient Boosting** | Kaggle competitions, production | High accuracy, handles imbalance | Slower training |
-| **XGBoost** | Production ML, tabular data | Industry-standard, optimized | Requires tuning |
-| **LightGBM** | Large datasets, fast iteration | Memory-efficient, rapid training | Fewer hyperparameters |
-| **Neural Networks** | Complex patterns, images, sequences | Flexible, scalable | Needs more data, tuning |
-
-### Quick Decision Tree
-
-```
-┌─ Small dataset (<10K rows)?          → Random Forest
-├─ Structured/tabular data?           → XGBoost or LightGBM
-├─ Need interpretability?             → Logistic Regression
-├─ Imbalanced classification?         → Gradient Boosting (with class weights)
-├─ High-dimensional (>1000 features)? → SVM or Neural Network
-├─ Images/sequences?                  → Neural Networks (CNN/RNN)
-└─ Unsure?                            → Start with Random Forest
-```
-
-### Why These Models Were Added
-
-**Gradient Boosting (Built-in)**
-- ✅ Scikit-learn native - no extra dependencies
-- ✅ Excellent imbalanced dataset support
-- ✅ Industry-proven accuracy
-- ✅ Reasonable training time for most datasets
-
-**XGBoost (Optional)**
-- ✅ 10-20% accuracy improvement over standard GB
-- ✅ Industry standard in Kaggle competitions
-- ✅ Advanced regularization features
-- ✅ Handles missing values automatically
-- ⚠️ Separate installation (faster iteration for users without it)
-
-**LightGBM (Optional)**
-- ✅ 2-5x faster than XGBoost on large datasets
-- ✅ Lower memory requirements
-- ✅ Better with millions of rows
-- ⚠️ Different hyperparameter meanings (separate installation)
-
-### Factory Pattern for Easy Extension
-
-The `ModelFactory` class enables effortless model addition:
-
-```python
-# Adding a new model is just 3 lines:
-def build_my_model(**params):
-    return MyModel(**params)
-
-ModelFactory.register_model(
-    'classification', 'my_model', build_my_model,
-    defaults={'param1': value}
-)
-```
-
-**Benefits:**
-- ✅ No UI changes needed - automatically appears in dropdown
-- ✅ No train.py or evaluate.py modifications
-- ✅ Hyperparameters configurable per-model
-- ✅ Graceful fallback if optional libraries missing
-
-## Key Design Patterns
-
-1. **Factory Pattern**: ModelFactory for flexible model creation
-2. **Repository Pattern**: Model and result storage
-3. **Pipeline Pattern**: Data preprocessing pipeline
-4. **Observer Pattern**: Real-time training callbacks
-5. **Session Pattern**: User session management
-
-## API Endpoints (FastAPI)
-
-Future endpoints for backend integration:
-
-```
-POST   /api/upload               - Upload dataset
-POST   /api/train                - Start training
-GET    /api/train/{session_id}   - Get training status
-GET    /api/results/{session_id} - Get results
-GET    /api/models               - List models
-GET    /api/models/{model_id}    - Download model
-```
-
-## Configuration
+## ⚙️ Configuration
 
 Edit `app/config.py` to customize:
 
 ```python
-MAX_FILE_SIZE = 500 * 1024 * 1024  # Max upload size
+MAX_FILE_SIZE = 500 * 1024 * 1024  # Max upload: 500MB
 DEFAULT_TEST_SIZE = 0.2             # Train-test split
 DEFAULT_CV_FOLDS = 5                # Cross-validation folds
 DEFAULT_EPOCHS = 50                 # DL epochs
 DEFAULT_BATCH_SIZE = 32             # DL batch size
+LOG_LEVEL = "INFO"                  # Logging level
 ```
 
-## Testing
-
-Run unit tests:
+## 🧪 Testing
 
 ```bash
+# Run all tests
 pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_core.py -v
+
+# Run with coverage
+pytest tests/ --cov=core --cov=models
 ```
 
-## Production Deployment
+## 📊 Screenshots
 
-### Docker
+### Home Page
+- Platform overview with feature highlights
+- Quick start guide with 3-step workflow
+- Supported models showcase
+- Call-to-action buttons
 
-```bash
-docker-compose up -d
-```
+### Data Upload
+- Drag-and-drop CSV upload
+- Sample dataset loading (Iris, Wine)
+- Data preview with statistics
+- Column information display
 
-### Cloud Deployment
+### EDA / Data Understanding
+- Missing value analysis
+- Feature distribution plots
+- Correlation heatmaps
+- Target variable analysis
+- Relationship visualization
 
-**AWS:**
-- Use EC2 for app hosting
-- S3 for model/data storage
-- RDS for metadata database
+### Training
+- Task type selection (Classification/Regression)
+- Algorithm selection with model-specific hyperparameters
+- Real-time training progress
+- Target validation with warnings
 
-**Google Cloud:**
-- Cloud Run for serverless deployment
-- Cloud Storage for models
-- Cloud SQL for database
+### Results
+- Performance metrics display
+- Model download (PKL)
+- Metrics export (JSON)
+- Detailed evaluation results
 
-**Azure:**
-- App Service for hosting
-- Blob Storage for models
-- SQL Database for metadata
+### About
+- Platform information
+- Supported algorithms list
+- Architecture overview
+- Quick links and acknowledgments
 
-## Scalability Path
-
-| Component | Dev | Prod |
-|-----------|-----|------|
-| Frontend | Streamlit | Streamlit + Load Balancer |
-| Backend | Single thread | Celery + Redis |
-| Database | SQLite | PostgreSQL |
-| Storage | Local FS | S3/GCS |
-| Caching | In-memory | Redis |
-| Monitoring | Logs | ELK Stack |
-
-## Security Considerations
+## 🔒 Security & Production Features
 
 - ✅ Input validation for file uploads
-- ✅ CSRF protection
-- ✅ Secure model serialization
+- ✅ Error handling with custom exceptions
+- ✅ Memory monitoring (90% threshold)
+- ✅ Comprehensive logging with file rotation
+- ✅ Non-root Docker user
+- ✅ Health checks in container
 - ✅ Environment-based configuration
-- ✅ Logging and audit trails
 - ⚠️ TODO: User authentication
 - ⚠️ TODO: Role-based access control
 
-## Performance Tips
+## 📈 Performance Optimization
 
-1. Use stratified split for imbalanced datasets
-2. Enable cross-validation for robust evaluation
-3. Use feature scaling for distance-based algorithms
-4. Cache preprocessed data for large datasets
-5. Use GPU acceleration for DL models
+| Optimization | Implementation |
+|--------------|-----------------|
+| **Caching** | @st.cache_data with TTL for expensive computations |
+| **Sampling** | 10% sampling for datasets >100K rows in visualizations |
+| **Preprocessing** | Vectorized operations with NumPy/Pandas |
+| **Memory** | MemoryMonitor tracks usage, prevents OOM |
+| **Logging** | Async logging to avoid blocking UI |
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
-**Issue**: Memory error with large datasets
-- **Solution**: Increase system RAM or use data streaming
+| Issue | Solution |
+|-------|----------|
+| Memory error with large datasets | Increase system RAM or use data streaming |
+| Slow training | Reduce batch size or feature count |
+| Import errors | Run `pip install -r requirements.txt` |
+| Port 8501 already in use | `streamlit run app/main.py --server.port 8502` |
+| Docker build fails | Ensure Docker daemon is running |
 
-**Issue**: Slow training
-- **Solution**: Use smaller batch size or fewer features
+## 📦 Deployment Options
 
-**Issue**: Import errors
-- **Solution**: Verify all dependencies: `pip install -r requirements.txt`
+### AWS
+```bash
+# EC2 + S3 + RDS
+- EC2 for app hosting
+- S3 for model/data storage
+- RDS for metadata database
+```
 
-## Contributing
+### Google Cloud
+```bash
+# Cloud Run + Cloud Storage
+- Cloud Run for serverless deployment
+- Cloud Storage for models
+- Cloud SQL for database
+```
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
+### Azure
+```bash
+# App Service + Blob Storage
+- App Service for hosting
+- Blob Storage for models
+- SQL Database for metadata
+```
+
+### Heroku
+```bash
+git push heroku main
+```
+
+## 🤝 Contributing
+
+1. Fork repository
+2. Create feature branch: `git checkout -b feature/amazing`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing`
 5. Create Pull Request
 
-## License
+## 📄 License
 
-MIT License - see LICENSE file
+MIT License - see [LICENSE](LICENSE) file
 
-## Support
+## 📞 Support
 
 - 📧 Email: support@example.com
-- 💬 Issues: GitHub Issues
-- 📖 Documentation: [Wiki](https://github.com/yourusername/ML_DL_Trainer/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/ML_DL_Trainer/issues)
+- 📖 Docs: [Wiki](https://github.com/yourusername/ML_DL_Trainer/wiki)
 
-## Roadmap
+## 🗺️ Roadmap
 
-- [ ] User authentication
-- [ ] Model versioning
-- [ ] Hyperparameter optimization
+- [ ] User authentication & RBAC
+- [ ] Model versioning & registry
+- [ ] Hyperparameter optimization (Optuna)
 - [ ] AutoML integration
 - [ ] Model explainability (SHAP, LIME)
 - [ ] Real-time collaboration
 - [ ] Mobile app
-- [ ] Advanced visualizations
+- [ ] Advanced visualizations (Plotly)
+- [ ] API endpoint documentation
+- [ ] Performance benchmarking
+
+## 📊 Resume-Ready Project Explanation
+
+**ML/DL Trainer** is a full-stack machine learning platform demonstrating end-to-end software engineering practices:
+
+### Technical Stack
+- **Frontend**: Streamlit (Python web framework)
+- **Backend**: FastAPI, Python
+- **ML/DL**: Scikit-learn (9 algorithms), TensorFlow/Keras (3 architectures)
+- **Data**: Pandas, NumPy
+- **DevOps**: Docker, Docker Compose
+- **Testing**: Pytest
+
+### Key Accomplishments
+1. **Architecture**: Implemented factory pattern for extensible model creation, repository pattern for data persistence
+2. **Data Pipeline**: Built preprocessing pipeline with automatic missing value handling, feature scaling, categorical encoding
+3. **Error Handling**: Developed comprehensive error handling module with custom exceptions, memory monitoring, production logging
+4. **UI/UX**: Created intuitive Streamlit interface with 6 pages, real-time feedback, sample datasets
+5. **Production Ready**: Added Docker support, health checks, non-root user, environment configuration
+6. **Testing**: Wrote unit tests for core components (feature analysis, target detection, preprocessing)
+
+### Design Patterns Used
+- **Factory Pattern**: ModelFactory for flexible model creation
+- **Repository Pattern**: Model and result storage abstraction
+- **Pipeline Pattern**: Data preprocessing pipeline
+- **Observer Pattern**: Real-time training callbacks
+- **Decorator Pattern**: Error handling decorators
+
+### Scalability Features
+- Caching with TTL for expensive computations
+- Data sampling for large datasets
+- Memory monitoring to prevent OOM
+- Async logging
+- Containerization for cloud deployment
 
 ---
 

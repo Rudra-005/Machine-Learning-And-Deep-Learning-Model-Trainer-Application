@@ -19,6 +19,7 @@ from storage.model_repository import ModelRepository
 from storage.result_repository import ResultRepository
 from backend.session_manager import SessionManager
 from app.utils.logger import logger
+from app.utils.error_handler import ErrorHandler, MemoryMonitor
 from app.pages.eda_page import render_eda_page
 
 # Page configuration
