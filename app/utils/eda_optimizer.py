@@ -64,7 +64,7 @@ class DataQualityChecker:
     
     @staticmethod
     def check_target_quality(target: pd.Series, task_type: str) -> Dict:
-        """Check target variable quality."""
+        """Check target variable quality. Handles both numeric and string data."""
         warnings = []
         
         if task_type == 'classification':
@@ -89,26 +89,37 @@ class DataQualityChecker:
             }
         
         else:  # regression
-            # Check target distribution
-            skewness = target.skew()
-            if abs(skewness) > 2:
-                warnings.append(("🟠 WARNING", f"Highly skewed target (skewness: {skewness:.2f})"))
-            
-            # Check for outliers
-            Q1 = target.quantile(0.25)
-            Q3 = target.quantile(0.75)
-            IQR = Q3 - Q1
-            outliers = ((target < Q1 - 1.5*IQR) | (target > Q3 + 1.5*IQR)).sum()
-            outlier_pct = (outliers / len(target)) * 100
-            
-            if outlier_pct > 10:
-                warnings.append(("🟠 WARNING", f"Many outliers ({outlier_pct:.1f}%)"))
-            
-            return {
-                'skewness': skewness,
-                'outlier_pct': outlier_pct,
-                'warnings': warnings
-            }
+            try:
+                # Convert to numeric, handling non-numeric data
+                target_numeric = pd.to_numeric(target, errors='coerce')
+                
+                # If all values are non-numeric, skip statistical checks
+                if target_numeric.isna().all():
+                    return {'skewness': 0, 'outlier_pct': 0, 'warnings': warnings}
+                
+                # Calculate skewness only on numeric values
+                skewness = target_numeric.skew()
+                if abs(skewness) > 2:
+                    warnings.append(("🟠 WARNING", f"Highly skewed target (skewness: {skewness:.2f})"))
+                
+                # Check for outliers
+                Q1 = target_numeric.quantile(0.25)
+                Q3 = target_numeric.quantile(0.75)
+                IQR = Q3 - Q1
+                outliers = ((target_numeric < Q1 - 1.5*IQR) | (target_numeric > Q3 + 1.5*IQR)).sum()
+                outlier_pct = (outliers / len(target_numeric.dropna())) * 100
+                
+                if outlier_pct > 10:
+                    warnings.append(("🟠 WARNING", f"Many outliers ({outlier_pct:.1f}%)"))
+                
+                return {
+                    'skewness': skewness,
+                    'outlier_pct': outlier_pct,
+                    'warnings': warnings
+                }
+            except Exception:
+                # If any error occurs, return safe defaults
+                return {'skewness': 0, 'outlier_pct': 0, 'warnings': warnings}
 
 
 class CachedEDAOperations:
@@ -118,8 +129,8 @@ class CachedEDAOperations:
     @st.cache_data(ttl=3600)
     def cached_missing_stats(data_hash: str, data: pd.DataFrame) -> Dict:
         """Cache missing value statistics."""
-        from core.missing_value_analyzer import compute_missing_statistics
-        return compute_missing_statistics(data)
+        from core.missing_value_analyzer import compute_missing_stats
+        return compute_missing_stats(data)
     
     @staticmethod
     @st.cache_data(ttl=3600)
@@ -179,7 +190,7 @@ def display_data_quality_warnings(data: pd.DataFrame, target_col: str = None):
         
         # Detect task type
         from core.target_analyzer import detect_task_type
-        task_type = detect_task_type(target)
+        task_type = detect_task_type(target).task_type
         
         target_quality = checker.check_target_quality(target, task_type)
         
