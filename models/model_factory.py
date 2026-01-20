@@ -14,7 +14,7 @@ import logging
 
 # Scikit-learn imports
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.svm import SVC, SVR
 
 # TensorFlow/Keras imports
@@ -59,6 +59,14 @@ DEFAULT_HYPERPARAMETERS = {
             'C': 1.0,
             'gamma': 'scale',
             'random_state': 42
+        },
+        'gradient_boosting': {
+            'n_estimators': 100,
+            'learning_rate': 0.1,
+            'max_depth': 5,
+            'min_samples_split': 5,
+            'min_samples_leaf': 2,
+            'random_state': 42
         }
     },
     'regression': {
@@ -75,6 +83,14 @@ DEFAULT_HYPERPARAMETERS = {
             'kernel': 'rbf',
             'C': 1.0,
             'gamma': 'scale'
+        },
+        'gradient_boosting': {
+            'n_estimators': 100,
+            'learning_rate': 0.1,
+            'max_depth': 5,
+            'min_samples_split': 5,
+            'min_samples_leaf': 2,
+            'random_state': 42
         }
     }
 }
@@ -112,6 +128,18 @@ def build_svm_regressor(**hyperparams) -> SVR:
     """Build Support Vector Machine regressor."""
     logger.info(f"Building SVM Regressor with params: {hyperparams}")
     return SVR(**hyperparams)
+
+
+def build_gradient_boosting_classifier(**hyperparams) -> GradientBoostingClassifier:
+    """Build Gradient Boosting classifier."""
+    logger.info(f"Building Gradient Boosting Classifier with params: {hyperparams}")
+    return GradientBoostingClassifier(**hyperparams)
+
+
+def build_gradient_boosting_regressor(**hyperparams) -> GradientBoostingRegressor:
+    """Build Gradient Boosting regressor."""
+    logger.info(f"Building Gradient Boosting Regressor with params: {hyperparams}")
+    return GradientBoostingRegressor(**hyperparams)
 
 
 def build_neural_network_classifier(
@@ -243,12 +271,14 @@ class ModelFactory:
             'logistic_regression': build_logistic_regression,
             'random_forest': build_random_forest_classifier,
             'svm': build_svm_classifier,
+            'gradient_boosting': build_gradient_boosting_classifier,
             'neural_network': build_neural_network_classifier,
         },
         'regression': {
             'linear_regression': None,  # sklearn native
             'random_forest': build_random_forest_regressor,
             'svm': build_svm_regressor,
+            'gradient_boosting': build_gradient_boosting_regressor,
             'neural_network': build_neural_network_regressor,
         }
     }

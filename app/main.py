@@ -324,12 +324,12 @@ elif page == "Training":
                 if task_type == "Classification":
                     model_name = st.selectbox(
                         "Algorithm",
-                        ["logistic_regression", "random_forest", "svm", "knn", "gradient_boosting"]
+                        ["logistic_regression", "random_forest", "svm", "gradient_boosting"]
                     )
                 else:
                     model_name = st.selectbox(
                         "Algorithm",
-                        ["linear_regression", "random_forest", "svm", "knn"]
+                        ["linear_regression", "random_forest", "svm", "gradient_boosting"]
                     )
             else:
                 model_name = st.selectbox("Architecture", ["sequential", "cnn", "rnn"])
@@ -342,8 +342,10 @@ elif page == "Training":
                     max_depth = st.slider("Max Depth", 2, 20, 10)
                 elif model_name == "svm":
                     kernel = st.selectbox("Kernel", ["linear", "rbf", "poly"])
-                elif model_name == "knn":
-                    n_neighbors = st.slider("Number of Neighbors", 2, 20, 5)
+                elif model_name == "gradient_boosting":
+                    n_estimators = st.slider("Number of Estimators", 10, 500, 100)
+                    learning_rate = st.slider("Learning Rate", 0.001, 0.5, 0.1, step=0.01)
+                    max_depth = st.slider("Max Depth", 2, 20, 5)
             else:
                 epochs = st.slider("Epochs", 10, 200, 50)
                 batch_size = st.selectbox("Batch Size", [16, 32, 64, 128])
@@ -452,6 +454,7 @@ elif page == "Training":
                     st.session_state.trained_model = model
                     st.session_state.metrics = metrics
                     st.session_state.preprocessor = preprocessor
+                    st.session_state.last_model_name = model_name
                     
             except Exception as e:
                 st.error(f"❌ Error during training: {str(e)}")
@@ -505,13 +508,30 @@ elif page == "Results":
                     st.write(f"**{key}**: {value}")
         
         with col2:
-            st.write("#### Export Options")
-            if st.button("💾 Save Results to JSON", use_container_width=True):
-                result_path = ResultRepository.save_results(metrics, "training_results")
-                st.success(f"✅ Results saved to: {result_path}")
+            st.write("#### Download Options")
             
-            if st.button("📊 Download Metrics CSV", use_container_width=True):
-                st.info("✅ Metrics ready for download")
+            if 'trained_model' in st.session_state:
+                import pickle
+                model_bytes = pickle.dumps(st.session_state.trained_model)
+                model_name = st.session_state.get('last_model_name', 'model')
+                
+                st.download_button(
+                    label="📥 Download Model (PKL)",
+                    data=model_bytes,
+                    file_name=f"{model_name}_trained.pkl",
+                    mime="application/octet-stream",
+                    use_container_width=True
+                )
+            
+            import json
+            metrics_json = json.dumps(metrics, indent=2, default=str)
+            st.download_button(
+                label="📊 Download Metrics (JSON)",
+                data=metrics_json,
+                file_name="metrics.json",
+                mime="application/json",
+                use_container_width=True
+            )
 
 # About Page
 elif page == "About":

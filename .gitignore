@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+*.log
+
+# Trained models & artifacts
+data/models/
+*.pkl
+*.joblib
+*.h5
+
+# Environment
+venv/
+.env/
+
+# OS
+.DS_Store
+Thumbs.db
