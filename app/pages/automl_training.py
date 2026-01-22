@@ -20,7 +20,6 @@ from app.utils.automl_ui import (
     get_automl_training_info,
     display_automl_results
 )
-from app.utils.state_manager import is_data_loaded, get_dataset, set_trained_model
 
 
 # Model registry for UI
@@ -47,11 +46,13 @@ def page_automl_training():
     """AutoML training page with automatic strategy selection."""
     st.header("🤖 AutoML Training Mode")
     
-    # Check if data is preprocessed - use the same check as main.py
-    if st.session_state.get('X_train') is None or st.session_state.get('y_train') is None:
-        st.warning("⚠️ Please load and preprocess data first in the Data Loading tab")
+    # Check if data is loaded
+    if 'data' not in st.session_state or st.session_state.data is None:
+        st.warning("⚠️ Please load data first in the Data Upload tab")
         st.info("Go to **1️⃣ Data Upload** to load your dataset")
         return
+    
+    data = st.session_state.data
     
     st.markdown("""
     **AutoML Mode** automatically detects your model type and applies the optimal training strategy:
@@ -99,11 +100,33 @@ def page_automl_training():
     if st.button("🚀 Start AutoML Training", type="primary", use_container_width=True):
         with st.spinner("Training model with optimal strategy..."):
             try:
-                # Get training data from session state
-                X_train = st.session_state.get('X_train')
-                y_train = st.session_state.get('y_train')
-                X_test = st.session_state.get('X_test')
-                y_test = st.session_state.get('y_test')
+                # Auto-preprocess if not already done
+                if st.session_state.get('X_train') is None:
+                    st.info("Preprocessing data...")
+                    from data_preprocessing import preprocess_dataset
+                    
+                    numeric_cols = data.select_dtypes(include=['number']).columns.tolist()
+                    target_col = numeric_cols[-1] if numeric_cols else data.columns[-1]
+                    
+                    X_train, X_val, X_test, y_train, y_val, y_test, preprocessor = preprocess_dataset(
+                        data,
+                        target_col=target_col,
+                        test_size=0.2,
+                        val_size=0.1
+                    )
+                    
+                    st.session_state.X_train = X_train
+                    st.session_state.X_val = X_val
+                    st.session_state.X_test = X_test
+                    st.session_state.y_train = y_train
+                    st.session_state.y_val = y_val
+                    st.session_state.y_test = y_test
+                    st.session_state.preprocessor = preprocessor
+                else:
+                    X_train = st.session_state.X_train
+                    y_train = st.session_state.y_train
+                    X_test = st.session_state.X_test
+                    y_test = st.session_state.y_test
                 
                 # Convert to numpy arrays if needed
                 if X_train is not None and not isinstance(X_train, np.ndarray):
@@ -115,11 +138,6 @@ def page_automl_training():
                 if y_test is not None and not isinstance(y_test, np.ndarray):
                     y_test = np.asarray(y_test)
                 
-                # Final validation
-                if X_train is None or y_train is None:
-                    st.error("❌ Training data is missing. Please load data first.")
-                    return
-                
                 # Display training info
                 st.info(get_automl_training_info(model))
                 
@@ -129,8 +147,7 @@ def page_automl_training():
                 )
                 
                 # Store results
-                set_trained_model(results.get('best_estimator', model))
-                st.session_state.training_results = results
+                st.session_state.trained_model = results.get('best_estimator', model)
                 st.session_state.model_trained = True
                 
                 # Display results
