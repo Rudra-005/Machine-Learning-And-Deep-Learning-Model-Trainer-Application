@@ -1,294 +1,247 @@
-# 🚀 ML/DL Trainer - Application Startup Guide
+# 🚀 AutoML Mode - Startup Guide
 
-## Quick Start
+## Quick Start (2 Minutes)
 
-### Option 1: Using Python Script (Recommended)
+### Step 1: Install Dependencies
+
+```bash
+pip install streamlit scikit-learn pandas numpy tensorflow
+```
+
+### Step 2: Run the Demo Application
+
 ```bash
 cd c:\Users\rudra\Downloads\ML_DL_Trainer
-python run_app.py
+streamlit run app_demo.py
 ```
 
-### Option 2: Using Batch File (Windows)
-```bash
-cd c:\Users\rudra\Downloads\ML_DL_Trainer
-run_app.bat
-```
-
-### Option 3: Direct Streamlit Command
-```bash
-cd c:\Users\rudra\Downloads\ML_DL_Trainer
-streamlit run app/main.py
-```
+The application will open in your browser at `http://localhost:8501`
 
 ---
 
-## 🌐 Access the Application
+## 📖 Using the Application
 
-Once started, open your browser and go to:
+### Page 1: 📊 Data Loading
+1. Click "Load Sample Dataset"
+2. Choose "Iris (Classification)" or "Diabetes (Regression)"
+3. Click "Load Sample Dataset" button
+4. Data is now ready for training
+
+### Page 2: 🧠 AutoML Training
+1. Select task type (Classification or Regression)
+2. Select a model from the dropdown
+3. **AutoML automatically detects the model type**
+4. **AutoML automatically selects the training strategy**
+5. **UI shows only relevant parameters**
+6. Configure parameters (optional)
+7. Click "🚀 Start AutoML Training"
+8. View results
+
+### Page 3: 📈 Strategy Guide
+Learn how AutoML selects strategies for different model types
+
+### Page 4: ℹ️ About
+Learn about AutoML Mode features and benefits
+
+---
+
+## 🎯 What to Try
+
+### Try 1: Random Forest (Tree-Based)
+1. Load Iris dataset
+2. Select "Random Forest"
+3. Notice: CV Folds shown, Epochs hidden
+4. Train and see K-Fold CV results
+
+### Try 2: Logistic Regression (Iterative)
+1. Load Iris dataset
+2. Select "Logistic Regression"
+3. Notice: CV Folds AND Max Iter shown
+4. Train and see K-Fold CV results
+
+### Try 3: SVM (SVM)
+1. Load Iris dataset
+2. Select "SVM"
+3. Notice: CV Folds shown, Max Iter hidden
+4. Enable HP Tuning for best results
+5. Train and see best hyperparameters
+
+### Try 4: Ridge (Regression)
+1. Load Diabetes dataset
+2. Select "Ridge"
+3. Train and see regression results
+
+---
+
+## 🔍 What to Observe
+
+### AutoML Detection
+- Each model automatically categorized
+- Strategy selected based on category
+- Parameters shown/hidden accordingly
+
+### Parameter Visibility
+- **Tree-Based**: CV Folds, HP Tuning
+- **Iterative**: CV Folds, Max Iter, HP Tuning
+- **SVM**: CV Folds, HP Tuning
+- **DL**: Epochs, Batch Size, Learning Rate
+
+### Results Display
+- **ML Models**: CV Score ± Std Dev, Test Score
+- **DL Models**: Train Loss, Val Loss, Test Accuracy
+
+---
+
+## 📊 Example Output
+
+### Random Forest Results
 ```
-http://localhost:8501
-```
-
----
-
-## 📋 Application Features
-
-### 1. **Home Page** 🏠
-- Overview of the platform
-- Quick start guide
-- Supported models list
-- Platform statistics
-
-### 2. **Data Upload** 📤
-- Upload CSV files
-- Load sample datasets (Iris, Wine)
-- View data preview and statistics
-- Automatic data validation
-
-### 3. **EDA / Data Understanding** 📊
-- **Overview Tab**: Dataset summary, column info, statistics
-- **Missing Values Tab**: Analysis and visualization
-- **Target Analysis Tab**: Classification/Regression detection
-- **Feature Analysis Tab**: Numerical and categorical features
-- **Correlation Tab**: Feature-target relationships
-
-### 4. **Training** ⚙️
-- Select task type (Classification/Regression)
-- Choose model algorithm
-- Configure hyperparameters
-- Train model with real-time feedback
-
-### 5. **Results** 📈
-- View performance metrics
-- Download trained model (PKL format)
-- Download metrics (JSON format)
-- Model information display
-
-### 6. **About** ℹ️
-- Platform information
-- Supported algorithms
-- Architecture details
-- Acknowledgments
-
----
-
-## 🤖 Supported Models
-
-### Machine Learning (Scikit-learn)
-
-**Classification:**
-- Logistic Regression
-- Random Forest
-- Support Vector Machine (SVM)
-- Gradient Boosting
-
-**Regression:**
-- Linear Regression
-- Random Forest
-- Support Vector Regression (SVR)
-- Gradient Boosting
-
-### Deep Learning (TensorFlow/Keras)
-- Sequential Neural Networks
-- Convolutional Neural Networks (CNN)
-- Recurrent Neural Networks (RNN/LSTM)
-
----
-
-## 📊 Workflow Example
-
-### Step 1: Upload Data
-1. Go to **Data Upload** tab
-2. Click "Load Iris Dataset" (or upload your CSV)
-3. View data preview and statistics
-
-### Step 2: Explore Data
-1. Go to **EDA / Data Understanding** tab
-2. Review data quality warnings
-3. Analyze target variable
-4. Check feature distributions
-5. Examine correlations
-
-### Step 3: Train Model
-1. Go to **Training** tab
-2. Select "Classification" task
-3. Choose "Random Forest" algorithm
-4. Adjust hyperparameters if needed
-5. Click "Start Training"
-
-### Step 4: View Results
-1. Go to **Results** tab
-2. View performance metrics
-3. Download trained model (PKL)
-4. Download metrics (JSON)
-
----
-
-## 🔧 System Requirements
-
-- **Python**: 3.9 or higher
-- **RAM**: 4GB minimum (8GB recommended)
-- **Disk Space**: 500MB for dependencies
-- **Browser**: Chrome, Firefox, Safari, or Edge
-
----
-
-## 📦 Dependencies
-
-All dependencies are listed in `requirements.txt`:
-
-```
-streamlit>=1.28.0
-pandas>=1.5.0
-numpy>=1.23.0
-scikit-learn>=1.3.0
-tensorflow>=2.13.0
-plotly>=5.17.0
-matplotlib>=3.7.0
+CV Score: 0.9533 ± 0.0245
+Test Score: 0.9667
+Best Params: {'n_estimators': 100, 'max_depth': 10, ...}
 ```
 
-Install with:
-```bash
-pip install -r requirements.txt
+### Logistic Regression Results
+```
+CV Score: 0.9200 ± 0.0356
+Test Score: 0.9333
 ```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Issue: Port 8501 already in use
-**Solution**: Use a different port
+### Issue: "ModuleNotFoundError: No module named 'models'"
+**Solution**: Make sure you're running from the ML_DL_Trainer directory
+
 ```bash
-streamlit run app/main.py --server.port 8502
+cd c:\Users\rudra\Downloads\ML_DL_Trainer
+streamlit run app_demo.py
 ```
 
-### Issue: Module not found errors
-**Solution**: Install dependencies
+### Issue: "No data loaded"
+**Solution**: Go to "📊 Data Loading" page and load a sample dataset first
+
+### Issue: "Training failed"
+**Solution**: Check the error message and ensure all dependencies are installed
+
 ```bash
-pip install -r requirements.txt
-```
-
-### Issue: Application crashes on EDA
-**Solution**: Ensure data has valid target column
-- Check for missing values in target
-- Ensure target column is selected
-- Try with sample dataset first
-
-### Issue: Model training fails
-**Solution**: Check data quality
-- Remove rows with missing values
-- Ensure target has at least 2 unique values (classification)
-- Check for non-numeric features
-
----
-
-## 📝 Configuration
-
-Edit `app/config.py` to customize:
-
-```python
-MAX_FILE_SIZE = 500 * 1024 * 1024  # Max upload size
-DEFAULT_TEST_SIZE = 0.2             # Train-test split
-DEFAULT_CV_FOLDS = 5                # Cross-validation folds
-DEFAULT_EPOCHS = 50                 # DL epochs
-DEFAULT_BATCH_SIZE = 32             # DL batch size
+pip install --upgrade scikit-learn pandas numpy streamlit
 ```
 
 ---
 
-## 🎯 Tips & Tricks
+## 📚 Documentation Files
 
-### For Best Performance:
-1. Use datasets with 1000-100,000 rows
-2. Start with sample datasets to learn
-3. Use Random Forest for general-purpose tasks
-4. Enable cross-validation for robust evaluation
-5. Download models for later use
+After running the app, read these files to understand the system:
 
-### For Data Exploration:
-1. Always run EDA before training
-2. Check data quality warnings
-3. Analyze target distribution
-4. Review feature correlations
-5. Look for missing values
-
-### For Model Training:
-1. Start with default hyperparameters
-2. Use stratified split for imbalanced data
-3. Compare multiple models
-4. Download best model for production
-5. Save metrics for documentation
+1. **AUTOML_QUICK_REFERENCE.md** - Quick reference guide
+2. **AUTOML_DOCUMENTATION.md** - Comprehensive guide
+3. **AUTOML_VISUAL_REFERENCE.md** - Visual diagrams
+4. **TRAINING_STRATEGY.md** - Strategy explanations
 
 ---
 
-## 📊 Sample Datasets
+## 🎓 Learning Path
 
-### Iris Dataset
-- **Rows**: 150
-- **Features**: 4 (sepal length, width, petal length, width)
-- **Target**: 3 classes (setosa, versicolor, virginica)
-- **Task**: Classification
+### Beginner (5 minutes)
+1. Run the app
+2. Load Iris dataset
+3. Try Random Forest
+4. Try Logistic Regression
+5. Observe parameter differences
 
-### Wine Dataset
-- **Rows**: 178
-- **Features**: 13 (alcohol, acidity, color, etc.)
-- **Target**: 3 classes (wine cultivars)
-- **Task**: Classification
+### Intermediate (15 minutes)
+1. Try all model types
+2. Enable HP tuning
+3. Compare results
+4. Read AUTOML_QUICK_REFERENCE.md
+
+### Advanced (30 minutes)
+1. Read AUTOML_DOCUMENTATION.md
+2. Study the source code
+3. Understand design patterns
+4. Plan extensions
 
 ---
 
-## 🔐 Security Notes
+## 🚀 Next Steps
 
-- ✅ No data is stored permanently
-- ✅ Models are saved locally only
-- ✅ No external API calls
-- ✅ All processing is local
-- ⚠️ Not suitable for sensitive data without authentication
+### After Running the Demo
+
+1. **Explore the Code**
+   - `models/automl.py` - Model detection
+   - `models/automl_trainer.py` - Training logic
+   - `app/utils/automl_ui.py` - UI components
+
+2. **Read Documentation**
+   - Start with AUTOML_QUICK_REFERENCE.md
+   - Then read AUTOML_DOCUMENTATION.md
+   - Review AUTOML_VISUAL_REFERENCE.md
+
+3. **Integrate into Your Project**
+   - Follow AUTOML_INTEGRATION_GUIDE.md
+   - Copy files to your project
+   - Update your main app
+
+4. **Extend the System**
+   - Add new models to MODEL_REGISTRY
+   - Add hyperparameter distributions
+   - Create custom strategies
+
+---
+
+## 💡 Tips
+
+### Tip 1: Use HP Tuning for Better Results
+Enable "Enable Hyperparameter Tuning" for more accurate models
+
+### Tip 2: Increase CV Folds for Robustness
+Use 10 folds instead of 5 for more robust evaluation
+
+### Tip 3: Compare Models
+Try different models on the same dataset to see which performs best
+
+### Tip 4: Check Strategy Explanation
+Click "Why this strategy?" to understand why each strategy was chosen
 
 ---
 
 ## 📞 Support
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review the README.md file
-3. Check application logs in `logs/app.log`
-4. Verify all dependencies are installed
+### For Questions About...
 
----
-
-## 🎓 Learning Resources
-
-- **Streamlit Docs**: https://docs.streamlit.io
-- **Scikit-learn Docs**: https://scikit-learn.org
-- **TensorFlow Docs**: https://www.tensorflow.org
-- **Pandas Docs**: https://pandas.pydata.org
+**How to run**: See "Quick Start" section above  
+**How to use**: See "Using the Application" section  
+**What to try**: See "What to Try" section  
+**Troubleshooting**: See "Troubleshooting" section  
+**Understanding**: Read the documentation files  
 
 ---
 
 ## ✅ Verification Checklist
 
-Before running the application, ensure:
+After running the app, verify:
 
-- [ ] Python 3.9+ installed
-- [ ] Virtual environment activated (if using one)
-- [ ] All dependencies installed (`pip install -r requirements.txt`)
-- [ ] Project directory accessible
-- [ ] Port 8501 is available
-- [ ] Sufficient disk space (500MB+)
-- [ ] Internet connection (for initial setup)
+- ✅ App opens in browser
+- ✅ Can load sample dataset
+- ✅ Can select models
+- ✅ Parameters change based on model
+- ✅ Can train models
+- ✅ Results display correctly
+- ✅ Strategy explanation shows
+- ✅ No errors in console
 
 ---
 
-## 🚀 Ready to Start?
+## 🎉 You're Ready!
 
-Run the application now:
+The AutoML Mode application is ready to use. Start with the Quick Start section above and explore the system.
 
-```bash
-python run_app.py
-```
+**Enjoy training models with AutoML! 🚀**
 
-Then open: **http://localhost:8501**
+---
 
-Enjoy training your ML/DL models! 🎉
-
+**Last Updated**: 2026-01-19  
+**Version**: 1.0  
+**Status**: Ready to Run

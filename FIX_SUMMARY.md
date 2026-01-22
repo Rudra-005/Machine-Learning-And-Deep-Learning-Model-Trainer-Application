@@ -1,149 +1,101 @@
-# ML/DL Trainer - Fix Summary
+# Training Error Fix Summary
 
-## Issue Resolved ✓
+## Problem
+Error: `The 'X' parameter of cross_validate must be an array-like or a sparse matrix. Got None instead.`
 
-**Error:** `Preprocessing error: expected str, bytes or os.PathLike object, not StringIO`
+This occurred when attempting to train a model in the AutoML Training page because the training data (`X_train`, `y_train`) was `None`.
 
-**Root Cause:** The `data_preprocessing.py` module only accepted file path strings, but the Streamlit app was passing `StringIO` objects when users uploaded CSV files.
+## Root Cause
+The `automl_training.py` page was checking for `data_preprocessed` flag but the actual training data was stored in `st.session_state.X_train`, `st.session_state.y_train`, etc. The page would proceed even when this data was `None`, passing `None` values to the trainer.
 
-## Solution Implemented
+## Solutions Applied
 
-### 1. Modified `data_preprocessing.py`
-
-**Updated `load_data()` method to accept both file paths AND DataFrames:**
-
+### 1. Fixed Data Validation in `automl_training.py` (Line 43-46)
+**Before:**
 ```python
-def load_data(self, filepath: Union[str, pd.DataFrame]) -> pd.DataFrame:
-    """
-    Load CSV dataset from file or accept DataFrame directly.
-    
-    Args:
-        filepath (Union[str, pd.DataFrame]): Path to CSV file or DataFrame object
-    """
-    if isinstance(filepath, pd.DataFrame):
-        self.df = filepath.copy()
-        logger.info(f"Loaded DataFrame: {self.df.shape[0]} rows, {self.df.shape[1]} columns")
-        return self.df
-    
-    # ... rest of file path loading logic
+if not st.session_state.get('data_preprocessed', False):
+    st.warning("⚠️ Please preprocess data first in the Data Loading tab")
+    return
+
+if st.session_state.X_train is None or st.session_state.y_train is None:
+    st.error("❌ Training data not found. Please preprocess data first.")
+    return
 ```
 
-**Updated `preprocess_dataset()` function signature:**
-
+**After:**
 ```python
-def preprocess_dataset(
-    filepath: Union[str, pd.DataFrame],  # Now accepts both!
-    target_col: str,
-    ...
-) -> Tuple[...]:
+if st.session_state.get('X_train') is None or st.session_state.get('y_train') is None:
+    st.warning("⚠️ Please load and preprocess data first in the Data Loading tab")
+    st.info("Go to **1️⃣ Data Upload** to load your dataset")
+    return
 ```
 
-### 2. Modified `app.py`
+**Why:** Directly checks for the actual training data instead of relying on a flag that might not be set.
 
-**Simplified the file handling in data loading:**
-
+### 2. Added Data Type Conversion in `automl_training.py` (Line 82-92)
+**Added:**
 ```python
-# Before (caused error):
-def file_like_csv(df):
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
-    return csv_buffer
-
-# After (works correctly):
-def file_like_csv(df):
-    # Now we can pass DataFrames directly
-    return df
+# Convert to numpy arrays if needed
+if X_train is not None and not isinstance(X_train, np.ndarray):
+    X_train = np.asarray(X_train)
+if y_train is not None and not isinstance(y_train, np.ndarray):
+    y_train = np.asarray(y_train)
+if X_test is not None and not isinstance(X_test, np.ndarray):
+    X_test = np.asarray(X_test)
+if y_test is not None and not isinstance(y_test, np.ndarray):
+    y_test = np.asarray(y_test)
 ```
 
-**Updated preprocessing call in app.py:**
+**Why:** Ensures data is in the correct format (numpy arrays) that scikit-learn expects.
 
+### 3. Added Input Validation in `automl_trainer.py` (Line 30-33)
+**Added:**
 ```python
-# Now pass DataFrame directly instead of StringIO
-X_train, X_val, X_test, y_train, y_val, y_test, preprocessor = preprocess_dataset(
-    st.session_state.dataset,  # Pass DataFrame directly!
-    target_col=target_col,
-    test_size=test_size,
-    val_size=0.1
-)
+# Validate inputs
+if X_train is None or y_train is None:
+    raise ValueError("X_train and y_train cannot be None")
 ```
 
-## Benefits of This Fix
+**Why:** Provides a clear error message if `None` values somehow reach the trainer.
 
-✅ **Cleaner Code** - No unnecessary StringIO conversions
-✅ **Better Flexibility** - Functions now accept both file paths and DataFrames
-✅ **Improved Reusability** - Easy to use in different contexts (files, databases, APIs)
-✅ **Better Performance** - No extra serialization/deserialization steps
-✅ **Type Safety** - Explicit type hints with Union types
+## How to Use
 
-## Testing
+1. **Load Data**: Go to **1️⃣ Data Upload** tab
+   - Upload a CSV file or load a sample dataset (Iris, Wine, Diabetes)
+   - Data will be automatically split into train/test sets
 
-All modules have been tested and verified to work correctly:
+2. **Train Model**: Go to **🤖 AutoML** tab
+   - Select task type (Classification or Regression)
+   - Select a model
+   - AutoML automatically detects the optimal training strategy
+   - Click "🚀 Start AutoML Training"
 
-```
-✓ Data Preprocessing - with DataFrame input
-✓ Model Factory - 5 different models (classifiers & regressors)  
-✓ Model Training - sklearn model training pipeline
-✓ Model Evaluation - comprehensive metrics computation
-```
+3. **View Results**: Go to **4️⃣ Results** tab
+   - See performance metrics
+   - Download trained model (PKL format)
+   - Export metrics (JSON format)
 
-Run the test suite to verify:
-```bash
-python test_integration.py
-```
+## Verification
+
+The fix ensures:
+- ✅ Data is properly loaded before training
+- ✅ Data is in correct format (numpy arrays)
+- ✅ Clear error messages if data is missing
+- ✅ Training proceeds only with valid data
+- ✅ No `None` values reach the cross-validation function
 
 ## Files Modified
 
-1. **data_preprocessing.py**
-   - Added `Union` to imports
-   - Modified `load_data()` to accept DataFrames
-   - Updated `preprocess_dataset()` signature
+1. `app/pages/automl_training.py` - Fixed data validation and type conversion
+2. `models/automl_trainer.py` - Added input validation
 
-2. **app.py**
-   - Simplified `file_like_csv()` function
-   - Now passes DataFrames directly to preprocessing
+## Testing
 
-## How to Use Now
-
-### Option 1: From File (As Before)
-```python
-from data_preprocessing import preprocess_dataset
-
-X_train, X_val, X_test, y_train, y_val, y_test, prep = preprocess_dataset(
-    'path/to/data.csv',  # File path works!
-    target_col='target'
-)
-```
-
-### Option 2: From DataFrame (NEW - Streamlit-Friendly)
-```python
-import pandas as pd
-from data_preprocessing import preprocess_dataset
-
-df = pd.read_csv('data.csv')
-# or df = st.session_state.dataset in Streamlit
-
-X_train, X_val, X_test, y_train, y_val, y_test, prep = preprocess_dataset(
-    df,  # DataFrame works too!
-    target_col='target'
-)
-```
-
-## Running the App
-
-Now the Streamlit app works without errors:
-
-```bash
-streamlit run app.py
-```
-
-The complete workflow is now operational:
-1. **Data Loading** - Upload CSV or load sample data
-2. **Preprocessing** - Configure and apply preprocessing
-3. **Model Training** - Select model and hyperparameters
-4. **Evaluation** - View comprehensive metrics and visualizations
-5. **Download** - Export trained model and results
-
----
-
-**Status:** ✅ All systems operational. Ready for production use.
+To verify the fix works:
+1. Load a sample dataset (Iris recommended)
+2. Go to AutoML Training tab
+3. Select Classification task
+4. Select Random Forest model
+5. Click "Start AutoML Training"
+6. Should see: "Training RandomForestClassifier with K-Fold Cross-Validation..."
+7. Results should display without errors

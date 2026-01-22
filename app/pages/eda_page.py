@@ -1,5 +1,5 @@
 """
-Optimized EDA / Data Understanding page for Streamlit app
+Redesigned EDA / Data Understanding page - Production UI
 """
 import streamlit as st
 import pandas as pd
@@ -52,50 +52,54 @@ from app.utils.eda_optimizer import (
 
 
 def render_eda_page():
-    """Render the optimized EDA / Data Understanding page."""
-    st.title("📊 EDA / Data Understanding")
+    """Render optimized EDA page with clean UI."""
+    st.title("2️⃣ Exploratory Data Analysis")
+    st.subheader("Understand your data before training")
+    st.divider()
     
     if 'data' not in st.session_state or st.session_state.data is None:
-        st.warning("⚠️ Please upload data first in 'Data Upload' tab")
+        st.warning("⚠️ Please upload data first")
         return
     
     data = st.session_state.data
-    data_hash = CachedEDAOperations.get_data_hash(data)
     
+    # Initialize session state
     if 'eda_target_col' not in st.session_state:
         st.session_state.eda_target_col = data.columns[0]
     if 'eda_selected_features' not in st.session_state:
         st.session_state.eda_selected_features = []
     
-    # Check if data should be sampled
+    # Data sampling info
     should_sample, sample_size = should_sample_data(data)
     if should_sample:
-        st.info(f"📊 Large dataset detected ({len(data):,} rows). Using {sample_size:,} samples for visualizations.")
+        st.info(f"📊 Large dataset ({len(data):,} rows). Using {sample_size:,} samples for visualizations.")
         viz_data = get_sampled_data(data, sample_size)
     else:
         viz_data = data
     
-    # Display data quality warnings
+    # Data quality warnings
     with st.expander("⚠️ Data Quality Report", expanded=False):
         display_data_quality_warnings(data, st.session_state.eda_target_col)
     
-    # Create tabs
+    st.divider()
+    
+    # Tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📋 Dataset Overview",
-        "❌ Missing Values",
-        "🎯 Target Analysis",
-        "🔍 Feature Analysis",
+        "📋 Overview",
+        "❌ Missing",
+        "🎯 Target",
+        "🔍 Features",
         "📈 Correlation"
     ])
     
-    # ============ TAB 1: Dataset Overview ============
+    # ============ TAB 1: OVERVIEW ============
     with tab1:
-        st.subheader("Dataset Overview")
+        st.markdown("### Dataset Overview")
         
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Rows", len(data))
+        col1.metric("Rows", f"{len(data):,}")
         col2.metric("Columns", len(data.columns))
-        col3.metric("Missing Values", int(data.isnull().sum().sum()))
+        col3.metric("Missing", int(data.isnull().sum().sum()))
         col4.metric("Duplicates", len(data) - len(data.drop_duplicates()))
         
         st.divider()
@@ -103,11 +107,11 @@ def render_eda_page():
         col1, col2 = st.columns(2)
         
         with col1:
-            st.write("**Data Preview**")
+            st.markdown("**Data Preview**")
             st.dataframe(data.head(10), use_container_width=True)
         
         with col2:
-            st.write("**Column Information**")
+            st.markdown("**Column Information**")
             col_info = pd.DataFrame({
                 'Column': data.columns,
                 'Type': data.dtypes,
@@ -119,12 +123,12 @@ def render_eda_page():
         
         st.divider()
         
-        st.write("**Descriptive Statistics**")
+        st.markdown("**Descriptive Statistics**")
         st.dataframe(data.describe(), use_container_width=True)
     
-    # ============ TAB 2: Missing Values ============
+    # ============ TAB 2: MISSING VALUES ============
     with tab2:
-        st.subheader("Missing Values Analysis")
+        st.markdown("### Missing Values Analysis")
         
         try:
             missing_stats = compute_missing_stats(data)
@@ -140,31 +144,31 @@ def render_eda_page():
                 
                 st.divider()
                 
-                st.write("**Missing Values by Column**")
+                st.markdown("**Missing by Column**")
                 st.dataframe(missing_stats[missing_stats['missing_count'] > 0], use_container_width=True)
                 
                 st.divider()
                 
-                threshold = st.slider("Missing Value Threshold (%)", 0, 100, 50)
+                threshold = st.slider("Threshold (%)", 0, 100, 50)
                 above_threshold = get_columns_above_threshold(data, threshold / 100)
                 
                 if above_threshold['count'] > 0:
-                    st.warning(f"⚠️ Columns above {threshold}% threshold: {above_threshold['columns']}")
+                    st.warning(f"⚠️ Above {threshold}%: {above_threshold['columns']}")
                 else:
-                    st.success(f"✅ No columns above {threshold}% threshold")
+                    st.success(f"✅ No columns above {threshold}%")
                 
                 st.divider()
                 
-                st.write("**Missing Value Patterns**")
                 patterns = get_missing_patterns(data)
+                st.markdown("**Missing Patterns**")
                 st.write(f"Rows with missing: {patterns['rows_with_missing']} ({patterns['rows_with_missing_pct']:.1f}%)")
                 
                 st.divider()
                 
-                st.write("**Missing Values Visualization**")
-                viz_type = st.selectbox("Visualization Type", ["Bar Chart", "Heatmap"])
+                st.markdown("**Visualization**")
+                viz_type = st.selectbox("Type", ["Bar Chart", "Heatmap"])
                 
-                if st.button("📊 Generate Plot", key="missing_plot"):
+                if st.button("📊 Generate", key="missing_plot"):
                     try:
                         if viz_type == "Bar Chart":
                             fig = create_missing_bar_chart(viz_data, backend='plotly')
@@ -173,54 +177,50 @@ def render_eda_page():
                         if fig:
                             st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
-                        st.error(f"Error creating visualization: {str(e)}")
-                        logger.error(f"Missing values visualization error: {str(e)}")
+                        st.error(f"Error: {str(e)}")
+                        logger.error(f"Missing plot error: {str(e)}")
         
         except Exception as e:
-            st.error(f"Error in missing values analysis: {str(e)}")
-            logger.error(f"Missing values analysis error: {str(e)}")
+            st.error(f"Error: {str(e)}")
+            logger.error(f"Missing analysis error: {str(e)}")
     
-    # ============ TAB 3: Target Analysis ============
+    # ============ TAB 3: TARGET ANALYSIS ============
     with tab3:
-        st.subheader("Target Variable Analysis")
+        st.markdown("### Target Variable Analysis")
         
         try:
-            target_col = st.selectbox(
-                "Select Target Column",
-                data.columns,
-                key="target_select"
-            )
+            target_col = st.selectbox("Select Target", data.columns, key="target_select")
             st.session_state.eda_target_col = target_col
             
             target_data = data[target_col].dropna()
             
             if len(target_data) == 0:
-                st.error("❌ Target column has no valid values")
+                st.error("❌ Target has no valid values")
                 return
             
             task_info = detect_task_type(target_data)
             task_type = task_info.task_type
             
             col1, col2, col3 = st.columns(3)
-            col1.metric("Task Type", task_type.upper())
-            col2.metric("Unique Values", target_data.nunique())
-            col3.metric("Data Type", str(target_data.dtype))
+            col1.metric("Task", task_type.upper())
+            col2.metric("Unique", target_data.nunique())
+            col3.metric("Type", str(target_data.dtype))
             
             st.divider()
             
             if task_type == 'classification':
-                st.write("**Classification Target Analysis**")
+                st.markdown("**Classification Analysis**")
                 
                 class_analysis = analyze_classification(target_data)
                 
                 col1, col2, col3 = st.columns(3)
                 col1.metric("Classes", class_analysis['n_classes'])
-                col2.metric("Imbalance Ratio", f"{class_analysis['imbalance_ratio']:.2f}:1")
-                col3.metric("Minority Class %", f"{(1/class_analysis['imbalance_ratio']*100):.2f}%")
+                col2.metric("Imbalance", f"{class_analysis['imbalance_ratio']:.2f}:1")
+                col3.metric("Minority %", f"{(1/class_analysis['imbalance_ratio']*100):.2f}%")
                 
                 st.divider()
                 
-                st.write("**Class Distribution**")
+                st.markdown("**Class Distribution**")
                 dist_df = pd.DataFrame({
                     'Class': list(class_analysis['class_distribution'].keys()),
                     'Percentage': list(class_analysis['class_distribution'].values())
@@ -229,25 +229,25 @@ def render_eda_page():
                 
                 if class_analysis['imbalance_ratio'] > 1.5:
                     st.warning(
-                        f"⚠️ **Imbalanced Dataset Detected!**\n\n"
-                        f"Imbalance Ratio: {class_analysis['imbalance_ratio']:.2f}:1\n"
-                        f"Recommendation: Consider using class weights during training"
+                        f"⚠️ **Imbalanced Dataset**\n\n"
+                        f"Ratio: {class_analysis['imbalance_ratio']:.2f}:1\n"
+                        f"Tip: Use class weights during training"
                     )
             
             else:
-                st.write("**Regression Target Analysis**")
+                st.markdown("**Regression Analysis**")
                 
                 reg_analysis = analyze_regression(target_data)
                 
                 col1, col2, col3, col4 = st.columns(4)
                 col1.metric("Mean", f"{reg_analysis['mean']:.4f}")
-                col2.metric("Std Dev", f"{reg_analysis['std']:.4f}")
-                col3.metric("Skewness", f"{reg_analysis['skewness']:.4f}")
-                col4.metric("Kurtosis", f"{reg_analysis['kurtosis']:.4f}")
+                col2.metric("Std", f"{reg_analysis['std']:.4f}")
+                col3.metric("Skew", f"{reg_analysis['skewness']:.4f}")
+                col4.metric("Kurt", f"{reg_analysis['kurtosis']:.4f}")
                 
                 st.divider()
                 
-                st.write("**Distribution Statistics**")
+                st.markdown("**Distribution Stats**")
                 stats_df = pd.DataFrame({
                     'Metric': ['Min', 'Q1', 'Median', 'Q3', 'Max'],
                     'Value': [
@@ -262,8 +262,8 @@ def render_eda_page():
             
             st.divider()
             
-            st.write("**Target Distribution**")
-            if st.button("📊 Generate Plot", key="target_plot"):
+            st.markdown("**Distribution Plot**")
+            if st.button("📊 Generate", key="target_plot"):
                 try:
                     if task_type == 'classification':
                         fig = create_class_distribution_plot(target_data, backend='plotly')
@@ -272,43 +272,43 @@ def render_eda_page():
                     if fig:
                         st.plotly_chart(fig, use_container_width=True)
                 except Exception as e:
-                    st.error(f"Error creating plot: {str(e)}")
+                    st.error(f"Error: {str(e)}")
         
         except Exception as e:
-            st.error(f"Error in target analysis: {str(e)}")
+            st.error(f"Error: {str(e)}")
             logger.error(f"Target analysis error: {str(e)}")
     
-    # ============ TAB 4: Feature Analysis ============
+    # ============ TAB 4: FEATURE ANALYSIS ============
     with tab4:
-        st.subheader("Feature Analysis")
+        st.markdown("### Feature Analysis")
         
         try:
             target_col = st.session_state.eda_target_col
             feature_cols = [col for col in data.columns if col != target_col]
             
             if not feature_cols:
-                st.warning("⚠️ No features available for analysis")
+                st.warning("⚠️ No features available")
                 return
             
             feature_types = detect_feature_types(data[feature_cols])
             
             col1, col2 = st.columns(2)
-            col1.metric("Numerical Features", len(feature_types['numerical']))
-            col2.metric("Categorical Features", len(feature_types['categorical']))
+            col1.metric("Numerical", len(feature_types['numerical']))
+            col2.metric("Categorical", len(feature_types['categorical']))
             
             st.divider()
             
-            st.write("**Select Features to Analyze**")
+            st.markdown("**Select Features**")
             selected_features = create_selective_plot_selector(feature_cols, max_default=3)
             st.session_state.eda_selected_features = selected_features
             
             if not selected_features:
-                st.info("ℹ️ Select at least one feature to analyze")
+                st.info("ℹ️ Select features to analyze")
                 return
             
             st.divider()
             
-            st.write("**Feature Statistics**")
+            st.markdown("**Feature Statistics**")
             
             for feature in selected_features:
                 with st.expander(f"📊 {feature}"):
@@ -327,7 +327,7 @@ def render_eda_page():
                             col3.metric("Min", f"{stats['min']:.4f}")
                             col4.metric("Max", f"{stats['max']:.4f}")
                         
-                        if st.button(f"📊 Plot {feature}", key=f"plot_{feature}"):
+                        if st.button(f"📊 Plot", key=f"plot_{feature}"):
                             try:
                                 if stats['type'] == 'numerical':
                                     fig = plot_numerical_histogram(viz_data, feature, backend='plotly')
@@ -336,18 +336,18 @@ def render_eda_page():
                                 if fig:
                                     st.plotly_chart(fig, use_container_width=True)
                             except Exception as e:
-                                st.error(f"Error creating plot: {str(e)}")
+                                st.error(f"Error: {str(e)}")
                     
                     except Exception as e:
-                        st.error(f"Error analyzing {feature}: {str(e)}")
+                        st.error(f"Error: {str(e)}")
         
         except Exception as e:
-            st.error(f"Error in feature analysis: {str(e)}")
+            st.error(f"Error: {str(e)}")
             logger.error(f"Feature analysis error: {str(e)}")
     
-    # ============ TAB 5: Correlation ============
+    # ============ TAB 5: CORRELATION ============
     with tab5:
-        st.subheader("Feature-Target Relationship Analysis")
+        st.markdown("### Feature-Target Relationships")
         
         try:
             target_col = st.session_state.eda_target_col
@@ -355,25 +355,22 @@ def render_eda_page():
             feature_cols = [col for col in data.columns if col != target_col]
             
             if not feature_cols:
-                st.warning("⚠️ No features available for correlation analysis")
+                st.warning("⚠️ No features available")
                 return
             
             task_info = detect_task_type(target_data)
             task_type = task_info.task_type
             
-            st.write("**Correlation Analysis**")
+            st.markdown("**Correlation Analysis**")
             
-            corr_method = st.selectbox("Correlation Method", ["pearson", "spearman"])
+            corr_method = st.selectbox("Method", ["pearson", "spearman"])
             
-            if st.button("📊 Compute Correlations", key="corr_btn"):
+            if st.button("📊 Compute", key="corr_btn"):
                 try:
-                    # Create temp dataframe with features and target
                     temp_df = data[feature_cols + [target_col]].copy()
-                    
-                    # Get correlations
                     top_result = get_top_correlated_features(temp_df, target_col, method=corr_method, top_n=10)
                     
-                    st.write(f"**Top {top_result['count']} Correlated Features**")
+                    st.markdown(f"**Top {top_result['count']} Correlated**")
                     top_df = pd.DataFrame({
                         'Feature': top_result['features'],
                         'Correlation': top_result['correlations']
@@ -387,10 +384,10 @@ def render_eda_page():
                     cat_features = feature_types['categorical']
                     
                     if cat_features:
-                        st.write("**Categorical Feature Analysis**")
-                        selected_cat = st.selectbox("Select Categorical Feature", cat_features)
+                        st.markdown("**Categorical Features**")
+                        selected_cat = st.selectbox("Select", cat_features)
                         
-                        if st.button("📊 Generate Plot", key="cat_plot"):
+                        if st.button("📊 Plot", key="cat_plot"):
                             try:
                                 if task_type == 'classification':
                                     fig = plot_categorical_classification(viz_data, selected_cat, target_col, backend='plotly')
@@ -399,39 +396,39 @@ def render_eda_page():
                                 if fig:
                                     st.plotly_chart(fig, use_container_width=True)
                             except Exception as e:
-                                st.error(f"Error in categorical analysis: {str(e)}")
+                                st.error(f"Error: {str(e)}")
                     
                     st.divider()
                     
-                    # Correlation heatmap
-                    st.write("**Correlation Heatmap**")
+                    # Heatmap
+                    st.markdown("**Correlation Heatmap**")
                     num_features = feature_types['numerical']
                     
                     if num_features:
                         heatmap_features = st.multiselect(
-                            "Select features for heatmap",
+                            "Features",
                             num_features,
                             default=num_features[:min(5, len(num_features))],
                             key="heatmap_select"
                         )
                         
-                        if heatmap_features and st.button("📊 Generate Heatmap", key="heatmap_btn"):
+                        if heatmap_features and st.button("📊 Generate", key="heatmap_btn"):
                             try:
                                 temp_hm = viz_data[heatmap_features].copy()
                                 fig = plot_correlation_heatmap(temp_hm, heatmap_features[0] if heatmap_features else None, backend='plotly')
                                 if fig:
                                     st.plotly_chart(fig, use_container_width=True)
                             except Exception as e:
-                                st.error(f"Error creating heatmap: {str(e)}")
+                                st.error(f"Error: {str(e)}")
                     else:
-                        st.info("ℹ️ No numerical features available for heatmap")
+                        st.info("ℹ️ No numerical features for heatmap")
                 
                 except Exception as e:
-                    st.error(f"Error in correlation analysis: {str(e)}")
-                    logger.error(f"Correlation analysis error: {str(e)}")
+                    st.error(f"Error: {str(e)}")
+                    logger.error(f"Correlation error: {str(e)}")
         
         except Exception as e:
-            st.error(f"Error in correlation analysis: {str(e)}")
+            st.error(f"Error: {str(e)}")
             logger.error(f"Correlation analysis error: {str(e)}")
 
 
