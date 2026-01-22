@@ -367,6 +367,3 @@ MIT License - see [LICENSE](LICENSE) file
 - Async logging
 - Containerization for cloud deployment
 
----
-
-**Made with ❤️ for the ML/DL community**
